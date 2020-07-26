@@ -1,3 +1,6 @@
+##########################################################################################
+# KagglePipeline class
+##########################################################################################
 import pandas as pd
 import spacy
 from spacy.util import minibatch
@@ -21,8 +24,7 @@ class KagglePipeline:
 		print(f"----------------------------------------------------")
 
 	def load_data(self):
-	    """Returns texts and labels in format {"real": bool(target), "not": not bool(target)} 
-	       for each (text,target) example from csv_file in shuffled order
+	    """Returns texts and targets for each (text,target) example in shuffled order from csv_file
 	    
 	        Arguments
 	        ---------
@@ -35,18 +37,17 @@ class KagglePipeline:
 	
 	    # Define texts from 'text' column and labels from 'target' column (HB: remember to use 'keyword','location' columns too)
 	    texts = shuffled_data['text'].values
-	    labels = [{"real": bool(target), "not": not bool(target)}
-	              for target in shuffled_data['target'].values] 
+	    targets = shuffled_data['target'].values
 	    
-	    return texts, labels
+	    return texts, targets
 	
-	def split_data(self, texts, labels, split_ratio=0.9):
-	    """Returns set1 texts, set1 labels, set2 texts, set2 labels for each (texts,label) example
+	def split_data(self, texts, targets, split_ratio=0.9):
+	    """Returns set1 texts, set1 targets, set2 texts, set2 targets for each (texts,target) example
 	    
 	        Arguments
 	        ---------
 	        texts: list of texts
-	        labels: list of labels
+	        targets: list of targets
 	        split_ratio: float {# of set1 examples} / {# of set2 examples} 
 	    """
 	    # Convert split ratio to a split index
@@ -56,22 +57,23 @@ class KagglePipeline:
 	    set1_texts = texts[:split_idx]
 	    set2_texts = texts[split_idx:]
 	
-	    # Split set1 and set2 labels
-	    set1_labels = labels[:split_idx]
-	    set2_labels = labels[split_idx:]
+	    # Split set1 and set2 targets
+	    set1_targets = targets[:split_idx]
+	    set2_targets = targets[split_idx:]
 	    
-	    return set1_texts, set1_labels, set2_texts, set2_labels
+	    return set1_texts, set1_targets, set2_texts, set2_targets
 	
-	def convert_to_cats(self, original_labels):
-	    """Returns labels as a dictionary keyed by 'cats' required by a spaCy TextCategorizer
+	def convert_to_cats(self, targets):
+	    """Returns a dictionary keyed by 'cats' required by a spaCy TextCategorizer, 
+		   in the format {'cats': {"real": bool(target), "not": not bool(target)}}
 	    
 	        Arguments
 	        ---------
 	        original_labels: list of labels
 	    """
-	    converted_labels = [{'cats': labels} for labels in original_labels]
+	    labels = [{'cats': {"real": bool(target), "not": not bool(target)}} for target in targets]
 	    
-	    return converted_labels
+	    return labels
 	
 	def train(self, model, train_data, optimizer, minibatch_size=8):
 	    losses = {}
@@ -109,8 +111,8 @@ class KagglePipeline:
 	        Arguments
 	        ---------
 	        model: spaCy model with a TextCategorizer
-	        texts: Text samples, from load_data function
-	        labels: True labels, from load_data function
+	        texts: list of texts
+	        labels: list of labels
 	
 	    """
 	    # Extract TextCategorizer from the nlp pipeline

@@ -10,17 +10,17 @@ realornot = KagglePipeline('train.csv')
 # Print parameters of KagglePipeline instance
 realornot.print_parameters()
 
-# Load data into texts list and labels list
-texts, labels = realornot.load_data()
+# Load data into texts list and targets list
+texts, targets = realornot.load_data()
 
 # Make train/val/test split
-train_texts, train_labels, remnant_texts, remnant_labels = realornot.split_data(texts, labels, split_ratio=0.9)
-val_texts, val_labels, test_texts, test_labels = realornot.split_data(remnant_texts, remnant_labels, split_ratio=0.5)
+train_texts, train_targets, remnant_texts, remnant_targets = realornot.split_data(texts, targets, split_ratio=0.9)
+val_texts, val_targets, test_texts, test_targets = realornot.split_data(remnant_texts, remnant_targets, split_ratio=0.5)
 
-# Convert labels into a dictionary keyed by 'cats' required by a spaCy TextCategorizer
-train_labels = realornot.convert_to_cats(train_labels)
-val_labels   = realornot.convert_to_cats(val_labels)
-test_labels  = realornot.convert_to_cats(test_labels)
+# Convert targets into labels i.e. a dictionary keyed by 'cats' required by a spaCy TextCategorizer
+train_labels = realornot.convert_to_cats(train_targets)
+val_labels   = realornot.convert_to_cats(val_targets)
+test_labels  = realornot.convert_to_cats(test_targets)
 
 # Create spaCy model
 nlp, _ = realornot.spacy_model(train_texts, train_labels, val_texts, val_labels, test_texts, test_labels)
